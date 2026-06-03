@@ -2,8 +2,8 @@
 // Deploy: supabase functions deploy meta-proxy
 
 const STREAM_TARGETS: Record<string, string> = {
-  mun103: 'https://cdn-th2.livestreaming.in.th/shoutcast/8730/stats?json=1',
-  xtra88: 'https://cdn-th2.livestreaming.in.th/shoutcast/8795/stats?json=1',
+  mun103: 'http://cdn-th2.livestreaming.in.th:8730/stats?json=1',
+  xtra88: 'http://cdn-th2.livestreaming.in.th:8795/stats?json=1',
 };
 
 const CORS_HEADERS = {

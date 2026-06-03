@@ -19,11 +19,11 @@ const nearestIdx = (f) => {
   return bi;
 };
 
-/** Parse Shoutcast "Artist - Title" → { title, artist } */
+/** Parse Shoutcast "Song - Artist" → { title, artist } */
 const parseMeta = (raw) => {
   if (!raw) return null;
   const idx = raw.indexOf(' - ');
-  if (idx > 0) return { artist: raw.slice(0, idx).trim(), title: raw.slice(idx + 3).trim() };
+  if (idx > 0) return { title: raw.slice(0, idx).trim(), artist: raw.slice(idx + 3).trim() };
   return { title: raw.trim(), artist: null };
 };
 
