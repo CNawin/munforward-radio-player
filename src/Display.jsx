@@ -3,9 +3,18 @@ import { RetroArt } from './parts/RetroArt';
 import { Waveform } from './parts/Waveform';
 import { Marquee } from './parts/Marquee';
 
-export function Display({ station, freq, playing, volume, marqueeSpeed = 14, liveSong, isFav, onToggleFav }) {
+/**
+ * liveMeta: { title: string | null, artist: string | null } | null
+ *
+ * Top line    (station-name): liveMeta.title  OR  station.name
+ * Bottom line (tagline):      liveMeta.artist OR  station.tagline (preset tagline / URL for custom)
+ */
+export function Display({ station, freq, playing, volume, marqueeSpeed = 14,
+                          liveMeta, isFav, onToggleFav, analyser }) {
   const live = playing && !!station;
-  const fmStr = freq.toFixed(2);
+
+  const topText    = liveMeta?.title  || station?.name    || 'No Signal';
+  const bottomText = liveMeta?.artist || station?.tagline || '';
 
   return (
     <div className="display">
@@ -16,16 +25,19 @@ export function Display({ station, freq, playing, volume, marqueeSpeed = 14, liv
             <span>{live ? 'ON AIR' : 'OFF AIR'}</span>
           </div>
           <div className="nowlabel">NOW PLAYING</div>
+
           {station
-            ? <Marquee className="station-name" text={station.name} speed={marqueeSpeed} />
+            ? <Marquee className="station-name" text={topText} speed={marqueeSpeed} />
             : <div className="station-name" style={{ color: 'var(--cream-dim)' }}>No Signal</div>
           }
           {station
-            ? <Marquee className="tagline thai" text={liveSong || station.tagline} speed={marqueeSpeed} />
+            ? <Marquee className="tagline thai" text={bottomText} speed={marqueeSpeed} />
             : <div className="tagline thai">หมุนปุ่ม TUNE หรือเลื่อนสเกลเพื่อค้นหาสถานี</div>
           }
-          <Waveform playing={live} amp={0.35 + volume * 0.65} />
+
+          <Waveform playing={live} analyser={analyser} />
         </div>
+
         {station && (
           <button
             className={`np-star ${isFav ? 'on' : ''}`}
@@ -36,12 +48,14 @@ export function Display({ station, freq, playing, volume, marqueeSpeed = 14, liv
             {isFav ? <Icon.star /> : <Icon.starO />}
           </button>
         )}
+
         <div className="art">
           {station
             ? (station.logo
                 ? <img className="art-img" src={station.logo} alt={station.name} />
                 : <RetroArt theme={station.theme} label={{ top: '', sub: '' }} />)
-            : <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg,#1a1a1a 0 2px,#262626 2px 4px)' }} />
+            : <div style={{ position: 'absolute', inset: 0,
+                background: 'repeating-linear-gradient(0deg,#1a1a1a 0 2px,#262626 2px 4px)' }} />
           }
         </div>
       </div>

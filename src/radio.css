@@ -661,3 +661,29 @@ body{
 .about-row{ display:flex; align-items:baseline; justify-content:space-between; }
 .about-name{ font-size:13px; font-weight:700; letter-spacing:.5px; color:var(--ink-strong); }
 .about-ver{ font-size:11px; color:var(--ink); opacity:.7; font-variant-numeric:tabular-nums; }
+
+/* ============ Custom stream image picker ============ */
+.img-picker{ margin-top:10px; display:flex; flex-direction:column; gap:8px; }
+.img-picker-label{ font-size:10px; font-weight:700; letter-spacing:1.8px; color:var(--ink); opacity:.75; }
+.img-picker-row{ display:flex; gap:10px; align-items:flex-start; }
+.img-thumb{
+  flex:0 0 64px; width:64px; height:64px; border-radius:10px; overflow:hidden;
+  background:linear-gradient(135deg,var(--body-mid),var(--body-lo));
+  border:1px solid var(--body-edge); cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.3);
+}
+.img-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+.img-thumb-ph{ font-size:26px; opacity:.5; }
+.img-picker-inputs{ flex:1 1 auto; display:flex; flex-direction:column; gap:7px; }
+.img-file-btn{
+  height:36px; border-radius:10px; cursor:pointer;
+  font-family:var(--font-label); font-size:12px; font-weight:600; color:var(--ink-strong);
+  padding:0 12px; text-align:left;
+}
+.img-clear{
+  align-self:flex-start; background:none; border:none; cursor:pointer;
+  font-size:11px; color:var(--ink); opacity:.7; padding:0;
+  font-family:var(--font-label);
+}
+.img-clear:hover{ opacity:1; }
