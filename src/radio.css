@@ -691,11 +691,12 @@ body{
 /* ============ Mobile: fill viewport, remove phone-in-phone frame ============ */
 @media screen and (max-width: 430px) {
   html, body {
-    height: 100svh;          /* stable height — doesn't jump when address bar hides */
+    height: 100svh;
     overflow: hidden;
   }
   body { align-items: flex-start; }
 
+  /* ── Outer phone frame: fill screen, no decorative chrome ── */
   .phone {
     width: 100vw  !important;
     height: 100svh !important;
@@ -705,7 +706,35 @@ body{
     transform: none   !important;
     margin: 0         !important;
   }
-  .screen-wrap {
-    border-radius: 0  !important;
+  .screen-wrap { border-radius: 0 !important; }
+
+  /* ── Radio body: no outer scroll — let .fav scroll instead ── */
+  .radio {
+    padding: 10px 12px 0 !important;
+    gap: 8px !important;
+    overflow-y: hidden !important;
   }
+
+  /* ── Tighten display section ── */
+  .display { padding: 11px 14px 10px !important; }
+  .onair   { margin-bottom: 7px  !important; }
+  .station-name { margin-bottom: 3px !important; }
+  .tagline { margin-bottom: 5px  !important; }
+  .waveform{ margin-bottom: 0    !important; }
+
+  /* Slightly smaller artwork */
+  .art { flex: 0 0 96px !important; width: 96px !important; height: 96px !important; }
+
+  /* ── Tighten deck ── */
+  .deck { padding: 10px 10px 9px !important; }
+
+  /* ── Favorites: flex-fill remaining space, scroll internally ── */
+  .fav {
+    flex: 1 1 0   !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    padding: 10px 11px 8px !important;
+  }
+  .fav-head { margin-bottom: 8px !important; }
+  .fav::-webkit-scrollbar { width: 0; }
 }
