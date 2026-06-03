@@ -57,6 +57,7 @@ export function App() {
   const audioCtxRef    = useRef(null);
   const gainRef        = useRef(null);   // GainNode — controls volume on iOS
   const srcConnected   = useRef(false);
+  const lastSongKey    = useRef('');     // "title|artist" — prevents art flicker on re-poll
   const phoneRef       = useRef(null);
 
   // ── Scale phone to fit viewport — desktop only; mobile uses CSS ──────────
@@ -155,26 +156,35 @@ export function App() {
   // ── Now Playing metadata ───────────────────────────────────────────────────
   useEffect(() => {
     setLiveMeta(null);
+    lastSongKey.current = '';
     if (!station?.meta || !playing) return;
     let alive = true;
     const pull = async () => {
       try {
         const r = await fetch(station.meta, { cache: 'no-store' });
         const j = await r.json();
-        // Also check direct image URL in Shoutcast response (songurl or stream cover)
         const rawArt = j.songurl || j.streams?.[0]?.songurl || null;
         const raw    = j.songtitle || j.streams?.[0]?.songtitle || j.title || null;
         if (!alive || !raw) return;
         const meta = parseMeta(raw);
-        // Use direct art if it looks like an image URL, otherwise skip (iTunes will fill it)
+        const songKey = `${meta.title}|${meta.artist}`;
+
+        // ── Same song as last poll → keep existing artUrl, no flicker ──
+        if (songKey === lastSongKey.current) {
+          setLiveMeta(prev => prev ? { ...prev, title: meta.title, artist: meta.artist } : meta);
+          return;
+        }
+
+        // ── New song → update metadata, then fetch fresh art ──
+        lastSongKey.current = songKey;
+
         if (rawArt && /\.(jpg|jpeg|png|webp|gif)/i.test(rawArt)) {
-          meta.artUrl = rawArt;
-          setLiveMeta(meta);
+          setLiveMeta({ ...meta, artUrl: rawArt });
         } else {
-          setLiveMeta(meta);
-          // Fetch album art from iTunes in background
+          setLiveMeta(meta);                            // show station logo while art loads
           fetchArtwork(meta.artist, meta.title).then(artUrl => {
-            if (alive) setLiveMeta(prev => prev ? { ...prev, artUrl: artUrl || null } : null);
+            if (alive && lastSongKey.current === songKey)
+              setLiveMeta(prev => prev ? { ...prev, artUrl: artUrl || null } : null);
           });
         }
       } catch { /* CORS / offline */ }
