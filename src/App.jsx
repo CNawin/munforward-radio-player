@@ -59,11 +59,18 @@ export function App() {
   const srcConnected   = useRef(false);
   const phoneRef       = useRef(null);
 
-  // ── Scale phone to fit viewport (iOS Safari dvh) ──────────────────────────
+  // ── Scale phone to fit viewport — desktop only; mobile uses CSS ──────────
   useEffect(() => {
     const DESIGN_W = 390, DESIGN_H = 844;
     const fit = () => {
       const el = phoneRef.current; if (!el) return;
+      if (window.innerWidth <= 430) {
+        // CSS @media handles mobile layout — clear any JS overrides
+        el.style.transform = '';
+        el.style.marginTop = '';
+        return;
+      }
+      // Desktop: shrink phone mockup to fit window
       const s = Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H, 1);
       el.style.transform = `scale(${s})`;
       el.style.transformOrigin = 'top center';

@@ -687,3 +687,25 @@ body{
   font-family:var(--font-label);
 }
 .img-clear:hover{ opacity:1; }
+
+/* ============ Mobile: fill viewport, remove phone-in-phone frame ============ */
+@media screen and (max-width: 430px) {
+  html, body {
+    height: 100svh;          /* stable height — doesn't jump when address bar hides */
+    overflow: hidden;
+  }
+  body { align-items: flex-start; }
+
+  .phone {
+    width: 100vw  !important;
+    height: 100svh !important;
+    border-radius: 0  !important;
+    box-shadow: none  !important;
+    padding: 4px      !important;
+    transform: none   !important;
+    margin: 0         !important;
+  }
+  .screen-wrap {
+    border-radius: 0  !important;
+  }
+}
