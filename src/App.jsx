@@ -56,6 +56,22 @@ export function App() {
   const audioRef       = useRef(null);
   const audioCtxRef    = useRef(null);
   const srcConnected   = useRef(false);
+  const phoneRef       = useRef(null);
+
+  // ── Scale phone to fit viewport (iOS Safari dvh) ──────────────────────────
+  useEffect(() => {
+    const DESIGN_W = 390, DESIGN_H = 844;
+    const fit = () => {
+      const el = phoneRef.current; if (!el) return;
+      const s = Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H, 1);
+      el.style.transform = `scale(${s})`;
+      el.style.transformOrigin = 'top center';
+      el.style.marginTop = `${Math.max(0, (window.innerHeight - DESIGN_H * s) / 2)}px`;
+    };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, []);
 
   const station = customStation || stationAt(freq);
   const setFreq = (f) => { setCustomStation(null); setFreqRaw(f); };
@@ -220,6 +236,7 @@ export function App() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div
+      ref={phoneRef}
       className="phone finish-silver glow-amber shape-boxy logo-sans head-sans"
       style={{ '--logo-size': '14px', '--head-size': '20px' }}
     >
