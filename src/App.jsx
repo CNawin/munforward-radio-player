@@ -137,6 +137,14 @@ export function App() {
     if (gainRef.current) gainRef.current.gain.value = volume;
   }, [volume]);
 
+  // ── Pre-load an image URL — resolves true/false when done ────────────────
+  const preloadImage = (url) => new Promise(resolve => {
+    const img = new Image();
+    img.onload  = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+
   // ── Album art from iTunes Search API ─────────────────────────────────────
   const fetchArtwork = async (artist, title) => {
     const q = [artist, title].filter(Boolean).join(' ').trim();
@@ -179,12 +187,23 @@ export function App() {
         lastSongKey.current = songKey;
 
         if (rawArt && /\.(jpg|jpeg|png|webp|gif)/i.test(rawArt)) {
-          setLiveMeta({ ...meta, artUrl: rawArt });
+          // Pre-load direct art before showing — no flash
+          preloadImage(rawArt).then(ok => {
+            if (!alive || lastSongKey.current !== songKey) return;
+            setLiveMeta(ok ? { ...meta, artUrl: rawArt } : meta);
+          });
         } else {
-          setLiveMeta(meta);                            // show station logo while art loads
-          fetchArtwork(meta.artist, meta.title).then(artUrl => {
+          // Show title/artist immediately; art appears only after fully loaded
+          setLiveMeta(prev => {
+            // Keep previous artUrl visible until new art is ready
+            const prevArt = prev?.artUrl || null;
+            return { ...meta, artUrl: prevArt };
+          });
+          fetchArtwork(meta.artist, meta.title).then(async artUrl => {
+            if (!alive || lastSongKey.current !== songKey || !artUrl) return;
+            const ok = await preloadImage(artUrl);
             if (alive && lastSongKey.current === songKey)
-              setLiveMeta(prev => prev ? { ...prev, artUrl: artUrl || null } : null);
+              setLiveMeta(prev => prev ? { ...prev, artUrl: ok ? artUrl : null } : null);
           });
         }
       } catch { /* CORS / offline */ }
