@@ -55,6 +55,7 @@ export function App() {
 
   const audioRef       = useRef(null);
   const audioCtxRef    = useRef(null);
+  const gainRef        = useRef(null);   // GainNode — controls volume on iOS
   const srcConnected   = useRef(false);
   const phoneRef       = useRef(null);
 
@@ -97,9 +98,14 @@ export function App() {
       an.fftSize = 64;                 // 32 frequency bins → 32 bars (1:1)
       an.smoothingTimeConstant = 0.75; // built-in smoothing before our decay
 
+      const gain = ctx.createGain();
+      gain.gain.value = volume;          // apply current volume immediately
+      gainRef.current = gain;
+
       const src = ctx.createMediaElementSource(audio);
       src.connect(an);
-      an.connect(ctx.destination);
+      an.connect(gain);                  // analyser → gain → speakers
+      gain.connect(ctx.destination);
 
       setAnalyser(an);
       srcConnected.current = true;
@@ -117,7 +123,11 @@ export function App() {
     if (playing) { a.play().catch(() => {}); } else { a.pause(); }
   }, [station, playing]);
 
-  useEffect(() => { if (audioRef.current) audioRef.current.volume = volume; }, [volume]);
+  useEffect(() => {
+    // audio.volume works on desktop; GainNode is used for iOS Safari
+    if (audioRef.current) audioRef.current.volume = volume;
+    if (gainRef.current) gainRef.current.gain.value = volume;
+  }, [volume]);
 
   // ── Album art from iTunes Search API ─────────────────────────────────────
   const fetchArtwork = async (artist, title) => {
