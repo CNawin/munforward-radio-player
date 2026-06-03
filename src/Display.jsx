@@ -51,9 +51,16 @@ export function Display({ station, freq, playing, volume, marqueeSpeed = 14,
 
         <div className="art">
           {station
-            ? (station.logo
-                ? <img className="art-img" src={station.logo} alt={station.name} />
-                : <RetroArt theme={station.theme} label={{ top: '', sub: '' }} />)
+            ? (() => {
+                // Priority: iTunes/stream art → station logo → RetroArt CSS
+                if (liveMeta?.artUrl)
+                  return <img className="art-img" src={liveMeta.artUrl}
+                               alt={liveMeta.title || station.name}
+                               onError={(e) => { e.target.style.display='none'; }} />;
+                if (station.logo)
+                  return <img className="art-img" src={station.logo} alt={station.name} />;
+                return <RetroArt theme={station.theme} label={{ top: '', sub: '' }} />;
+              })()
             : <div style={{ position: 'absolute', inset: 0,
                 background: 'repeating-linear-gradient(0deg,#1a1a1a 0 2px,#262626 2px 4px)' }} />
           }

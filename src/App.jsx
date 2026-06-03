@@ -103,6 +103,22 @@ export function App() {
 
   useEffect(() => { if (audioRef.current) audioRef.current.volume = volume; }, [volume]);
 
+  // ── Album art from iTunes Search API ─────────────────────────────────────
+  const fetchArtwork = async (artist, title) => {
+    const q = [artist, title].filter(Boolean).join(' ').trim();
+    if (!q) return null;
+    try {
+      const r = await fetch(
+        `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&limit=1`,
+        { cache: 'no-store' }
+      );
+      const j = await r.json();
+      const raw = j.results?.[0]?.artworkUrl100;
+      // Upscale: replace 100x100bb → 500x500bb for sharper display
+      return raw ? raw.replace('100x100bb', '500x500bb') : null;
+    } catch { return null; }
+  };
+
   // ── Now Playing metadata ───────────────────────────────────────────────────
   useEffect(() => {
     setLiveMeta(null);
@@ -112,8 +128,22 @@ export function App() {
       try {
         const r = await fetch(station.meta, { cache: 'no-store' });
         const j = await r.json();
-        const raw = j.songtitle || j.streams?.[0]?.songtitle || j.title || null;
-        if (alive && raw) setLiveMeta(parseMeta(raw));
+        // Also check direct image URL in Shoutcast response (songurl or stream cover)
+        const rawArt = j.songurl || j.streams?.[0]?.songurl || null;
+        const raw    = j.songtitle || j.streams?.[0]?.songtitle || j.title || null;
+        if (!alive || !raw) return;
+        const meta = parseMeta(raw);
+        // Use direct art if it looks like an image URL, otherwise skip (iTunes will fill it)
+        if (rawArt && /\.(jpg|jpeg|png|webp|gif)/i.test(rawArt)) {
+          meta.artUrl = rawArt;
+          setLiveMeta(meta);
+        } else {
+          setLiveMeta(meta);
+          // Fetch album art from iTunes in background
+          fetchArtwork(meta.artist, meta.title).then(artUrl => {
+            if (alive) setLiveMeta(prev => prev ? { ...prev, artUrl: artUrl || null } : null);
+          });
+        }
       } catch { /* CORS / offline */ }
     };
     pull();
