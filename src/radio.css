@@ -736,7 +736,8 @@ body{
   .onair   { margin-bottom: 7px  !important; }
   .station-name { margin-bottom: 3px !important; }
   .tagline { margin-bottom: 5px  !important; }
-  .waveform{ margin-bottom: 0    !important; }
+  /* iOS can't read live-stream audio → hide the wave instead of faking it */
+  .waveform{ display: none !important; }
 
   /* Slightly smaller artwork */
   .art { flex: 0 0 96px !important; width: 96px !important; height: 96px !important; }
