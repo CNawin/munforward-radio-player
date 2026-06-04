@@ -115,6 +115,8 @@ export function App() {
       an.connect(gain);                  // analyser → gain → speakers
       gain.connect(ctx.destination);
 
+      ctx.resume();                      // iOS: unlock suspended context within gesture
+
       setAnalyser(an);
       srcConnected.current = true;
     } catch (e) {
@@ -163,8 +165,10 @@ export function App() {
       try {
         const r = await fetch(station.meta, { cache: 'no-store' });
         const j = await r.json();
-        const rawArt = j.songurl || j.streams?.[0]?.songurl || null;
-        const raw    = j.songtitle || j.streams?.[0]?.songtitle || j.title || null;
+        // Edge Function now resolves album art server-side and returns it here
+        const proxyArt = j.artUrl || null;
+        const rawArt   = j.songurl || j.streams?.[0]?.songurl || null;
+        const raw      = j.songtitle || j.streams?.[0]?.songtitle || j.title || null;
         if (!alive || !raw) return;
         const meta = parseMeta(raw);
         const songKey = `${meta.title}|${meta.artist}`;
@@ -175,15 +179,16 @@ export function App() {
           return;
         }
 
-        // ── New song → update metadata, then fetch fresh art ──
+        // ── New song ──
         lastSongKey.current = songKey;
 
-        // Direct art from stream if present, else fetch from iTunes.
-        // Set artUrl straight away (null → Display shows station logo layer);
-        // no preloadImage — it can hang on iOS WebKit detached images.
-        const directArt = (rawArt && /\.(jpg|jpeg|png|webp|gif)/i.test(rawArt)) ? rawArt : null;
+        // Prefer server-resolved art (works on iOS), then stream cover.
+        const directArt =
+          proxyArt ||
+          ((rawArt && /\.(jpg|jpeg|png|webp|gif)/i.test(rawArt)) ? rawArt : null);
         setLiveMeta({ ...meta, artUrl: directArt });
 
+        // Fallback: client-side iTunes lookup if the proxy gave nothing
         if (!directArt) {
           fetchArtwork(meta.artist, meta.title).then(artUrl => {
             if (alive && lastSongKey.current === songKey)

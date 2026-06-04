@@ -34,14 +34,21 @@ export function Waveform({ playing, analyser }) {
     let zeroFrames = 0;
     let useFallback = !analyser; // no analyser → synthetic from the start
 
-    // Synthetic "music-like" motion — used on iOS where FFT returns zeros
+    // Synthetic EQ-like motion — used on iOS where FFT returns zeros.
+    // Bass bars (left) move bigger & slower, treble (right) smaller & jumpier.
     const synthetic = () => {
-      phase.current += 0.16;
+      phase.current += 0.13;
+      const p = phase.current;
       for (let i = 0; i < BARS; i++) {
-        const t = phase.current + i * 0.45;
-        const v = (Math.sin(t) * 0.5 + 0.5) * (Math.sin(t * 0.37 + 1.3) * 0.5 + 0.5);
-        const target = 14 + v * 80;
-        heights.current[i] = target > heights.current[i] ? target : heights.current[i] * DECAY;
+        const bass = 1 - i / BARS;                       // 1 at left → 0 at right
+        const a = Math.sin(p * (1 + i * 0.06) + i * 0.7);
+        const b = Math.sin(p * 0.53 + i * 1.9);
+        const c = Math.sin(p * 2.1 + i * 0.33);
+        const mix = (a * 0.5 + b * 0.3 + c * 0.2) * 0.5 + 0.5; // 0..1
+        const target = 8 + mix * (45 + bass * 50);       // bass taller
+        heights.current[i] = target > heights.current[i]
+          ? target
+          : heights.current[i] * DECAY;
         bars[i].style.height = `${Math.max(3, heights.current[i])}%`;
       }
     };
