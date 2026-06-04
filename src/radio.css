@@ -702,18 +702,31 @@ body{
     height: 100svh !important;
     border-radius: 0  !important;
     box-shadow: none  !important;
-    padding: 4px      !important;
+    padding: 0        !important;
     transform: none   !important;
     margin: 0         !important;
   }
   .screen-wrap { border-radius: 0 !important; }
 
-  /* ── Radio body: no outer scroll — let .fav scroll instead ── */
+  /* ── Radio body: column that fills height; only .fav scrolls.
+        Side padding 16px; top/bottom honour safe-area (PWA / notch). ── */
   .radio {
-    padding: 10px 12px 0 !important;
+    padding-top:    max(10px, env(safe-area-inset-top))    !important;
+    padding-bottom: max(6px,  env(safe-area-inset-bottom)) !important;
+    padding-left:   max(16px, env(safe-area-inset-left))   !important;
+    padding-right:  max(16px, env(safe-area-inset-right))  !important;
     gap: 8px !important;
     overflow-y: hidden !important;
   }
+
+  /* ── LOCK the 4 control sections — never shrink, always visible ── */
+  .header,
+  .display,
+  .tuner-row,
+  .deck { flex: 0 0 auto !important; }
+
+  /* Bigger touch target for menu button (44px min) */
+  .menu-btn { width: 48px !important; height: 44px !important; }
 
   /* ── Tighten display section ── */
   .display { padding: 11px 14px 10px !important; }
@@ -728,11 +741,12 @@ body{
   /* ── Tighten deck ── */
   .deck { padding: 10px 10px 9px !important; }
 
-  /* ── Favorites: flex-fill remaining space, scroll internally ── */
+  /* ── Favorites: the ONLY flexible/scrollable area ── */
   .fav {
     flex: 1 1 0   !important;
     min-height: 0 !important;
     overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
     padding: 10px 11px 8px !important;
   }
   .fav-head { margin-bottom: 8px !important; }
