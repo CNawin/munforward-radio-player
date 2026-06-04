@@ -265,6 +265,9 @@ body{
   font-family:var(--font-label); color:#fff; z-index:3;
 }
 .art-img{ width:100%; height:100%; object-fit:cover; display:block; background:#fff; }
+/* layered art: logo base + live album art on top (no flash on swap) */
+.art-base{ position:absolute; inset:0; z-index:1; }
+.art-live{ position:absolute; inset:0; z-index:2; }
 .art .art-label b{ display:block; font-weight:700; font-size:14px; letter-spacing:3px; text-shadow:0 1px 4px rgba(0,0,0,.6); }
 .art .art-label small{ font-size:9px; letter-spacing:5px; opacity:.9; }
 

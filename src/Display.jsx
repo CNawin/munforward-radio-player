@@ -50,20 +50,29 @@ export function Display({ station, freq, playing, volume, marqueeSpeed = 14,
         )}
 
         <div className="art">
-          {station
-            ? (() => {
-                // Priority: iTunes/stream art → station logo → RetroArt CSS
-                if (liveMeta?.artUrl)
-                  return <img className="art-img" src={liveMeta.artUrl}
-                               alt={liveMeta.title || station.name}
-                               onError={(e) => { e.target.style.display='none'; }} />;
-                if (station.logo)
-                  return <img className="art-img" src={station.logo} alt={station.name} />;
-                return <RetroArt theme={station.theme} label={{ top: '', sub: '' }} />;
-              })()
-            : <div style={{ position: 'absolute', inset: 0,
-                background: 'repeating-linear-gradient(0deg,#1a1a1a 0 2px,#262626 2px 4px)' }} />
-          }
+          {station ? (
+            <>
+              {/* Base layer — station logo or retro art (always present) */}
+              {station.logo
+                ? <img className="art-img art-base" src={station.logo} alt={station.name} />
+                : <RetroArt theme={station.theme} label={{ top: '', sub: '' }} />}
+
+              {/* Top layer — live album art; covers the base once it loads.
+                  If it fails, it hides itself and the logo shows through. */}
+              {liveMeta?.artUrl && (
+                <img
+                  key={liveMeta.artUrl}
+                  className="art-img art-live"
+                  src={liveMeta.artUrl}
+                  alt={liveMeta.title || station.name}
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              )}
+            </>
+          ) : (
+            <div style={{ position: 'absolute', inset: 0,
+              background: 'repeating-linear-gradient(0deg,#1a1a1a 0 2px,#262626 2px 4px)' }} />
+          )}
         </div>
       </div>
     </div>
