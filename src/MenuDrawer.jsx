@@ -1,8 +1,11 @@
 import { useState, useRef } from 'react';
 
-export function MenuDrawer({ open, onClose, onPlayUrl, sleepMin, onSetSleep, sleepRemain,
+export function MenuDrawer({ open, onClose, onPreviewUrl, onCreateStation,
+                             sleepMin, onSetSleep, sleepRemain,
                              alarm, onAlarmTime, alarmOn, onAlarmToggle, version = 'v1.0.0 · 2026' }) {
   const [url, setUrl]             = useState('');
+  const [name, setName]           = useState('');
+  const [fm, setFm]               = useState('');   // optional FM number (string)
   const [imgSrc, setImgSrc]       = useState('');   // data URL or http URL
   const [imgUrlInput, setImgUrlInput] = useState('');
   const fileRef = useRef(null);
@@ -20,12 +23,21 @@ export function MenuDrawer({ open, onClose, onPlayUrl, sleepMin, onSetSleep, sle
     setImgSrc(v);
   };
 
-  const submit = () => {
+  const reset = () => { setUrl(''); setName(''); setFm(''); setImgSrc(''); setImgUrlInput(''); };
+
+  const preview = () => {
     const u = url.trim();
-    if (u) onPlayUrl(u, imgSrc || null);
+    if (u) onPreviewUrl(u, imgSrc || null, name.trim());
   };
 
-  const reset = () => { setUrl(''); setImgSrc(''); setImgUrlInput(''); };
+  const create = () => {
+    const u = url.trim();
+    if (!u) return;
+    const f = parseFloat(fm);
+    const freq = (!isNaN(f) && f >= 87.5 && f <= 108) ? f : null;
+    onCreateStation({ url: u, imageSrc: imgSrc || null, name: name.trim(), freq });
+    reset();
+  };
 
   const handleClose = () => { onClose(); };
 
@@ -42,24 +54,40 @@ export function MenuDrawer({ open, onClose, onPlayUrl, sleepMin, onSetSleep, sle
           <button className="menu-close raised" onClick={handleClose} aria-label="close menu">✕</button>
         </div>
 
-        {/* ── Custom stream URL ── */}
+        {/* ── Add custom station ── */}
         <section className="menu-sec">
-          <div className="menu-sec-h">CUSTOM STREAM URL</div>
-          <div className="url-row">
+          <div className="menu-sec-h">เพิ่มสถานีเอง</div>
+
+          {/* Stream URL */}
+          <input
+            className="url-input" type="url" inputMode="url" spellCheck={false}
+            value={url} placeholder="Stream URL — https://…/stream"
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') preview(); }}
+          />
+
+          {/* Name + FM */}
+          <div className="field-row">
             <input
-              className="url-input" type="url" inputMode="url" spellCheck={false}
-              value={url} placeholder="https://…/stream"
-              onChange={(e) => setUrl(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
+              className="url-input" type="text" spellCheck={false}
+              value={name} placeholder="ชื่อสถานี (ไม่บังคับ)"
+              onChange={(e) => setName(e.target.value)}
             />
-            <button className="url-go raised" onClick={submit}>PLAY</button>
+            <input
+              className="url-input fm-input" type="number" inputMode="decimal"
+              min="87.5" max="108" step="0.25"
+              value={fm} placeholder="เลข FM"
+              onChange={(e) => setFm(e.target.value)}
+            />
+          </div>
+          <div className="field-hint thai">
+            ใส่เลข FM → ไปอยู่บนหน้าปัด (หมุนหาได้) · ไม่ใส่ → ลงรายการโปรด
           </div>
 
           {/* Image picker */}
           <div className="img-picker">
             <div className="img-picker-label">รูปภาพสถานี (ไม่บังคับ)</div>
             <div className="img-picker-row">
-              {/* Preview */}
               <div className="img-thumb" onClick={() => fileRef.current?.click()}>
                 {imgSrc
                   ? <img src={imgSrc} alt="preview" onError={() => setImgSrc('')} />
@@ -67,12 +95,10 @@ export function MenuDrawer({ open, onClose, onPlayUrl, sleepMin, onSetSleep, sle
                 }
               </div>
               <div className="img-picker-inputs">
-                {/* File */}
                 <button className="img-file-btn raised" onClick={() => fileRef.current?.click()}>
                   📁 เลือกรูปจากเครื่อง
                 </button>
                 <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
-                {/* URL */}
                 <input
                   className="url-input" type="url" inputMode="url" spellCheck={false}
                   value={imgUrlInput} placeholder="หรือ Image URL…"
@@ -85,6 +111,12 @@ export function MenuDrawer({ open, onClose, onPlayUrl, sleepMin, onSetSleep, sle
                 ✕ ลบรูป
               </button>
             )}
+          </div>
+
+          {/* Actions */}
+          <div className="url-actions">
+            <button className="url-preview raised" onClick={preview}>▶ ลองเล่น</button>
+            <button className="url-go raised" onClick={create}>+ สร้างสถานี</button>
           </div>
         </section>
 

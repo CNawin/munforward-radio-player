@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { BAND, STATIONS } from './data';
+import { BAND, STATIONS, PINNED_IDS, resolveStream, isBlockedHttp } from './data';
 import { Display } from './Display';
 import { TuningScale } from './TuningScale';
 import { Deck } from './Deck';
@@ -12,12 +12,9 @@ const snap = (f) => {
   const v = Math.round((f - BAND.min) / BAND.step) * BAND.step + BAND.min;
   return Math.max(BAND.min, Math.min(BAND.max, Math.round(v * 100) / 100));
 };
-const stationAt  = (f) => STATIONS.find(s => Math.abs(s.freq - f) < 0.001) || null;
-const nearestIdx = (f) => {
-  let bi = 0, bd = Infinity;
-  STATIONS.forEach((s, i) => { const d = Math.abs(s.freq - f); if (d < bd) { bd = d; bi = i; } });
-  return bi;
-};
+// Stations that actually sit on the dial (have a numeric freq)
+const onDial = (list) => list.filter(s => typeof s.freq === 'number');
+const stationAt = (list, f) => onDial(list).find(s => Math.abs(s.freq - f) < 0.001) || null;
 
 /** Parse Shoutcast "Song - Artist" → { title, artist } */
 const parseMeta = (raw) => {
@@ -28,21 +25,30 @@ const parseMeta = (raw) => {
 };
 
 // ── persistence ───────────────────────────────────────────────────────────────
+// favs = ordered array of station ids the user starred (pinned ids excluded)
 const loadFavs = () => {
-  try { return new Set(JSON.parse(localStorage.getItem('mun-favs') || '[]')); }
-  catch { return new Set(STATIONS.map(s => s.id)); }
+  try { return JSON.parse(localStorage.getItem('mun-favs2') || '[]'); }
+  catch { return []; }
+};
+// userStations = custom stations the user created (persisted)
+const loadUserStations = () => {
+  try { return JSON.parse(localStorage.getItem('mun-stations') || '[]'); }
+  catch { return []; }
 };
 const loadFreq = () => {
   const v = parseFloat(localStorage.getItem('mun-freq'));
   return isNaN(v) ? 103.00 : v;
 };
 
+const CUSTOM_THEME = { sky: ['#241a12', '#5a3a1e'], sun: '#f4b860', glow: '#e08a2e', water: '#c9762a' };
+
 // ── App ───────────────────────────────────────────────────────────────────────
 export function App() {
   const [freq, setFreqRaw]        = useState(loadFreq);
   const [playing, setPlaying]     = useState(false);
   const [volume, setVolume]       = useState(0.72);
-  const [favs, setFavs]           = useState(loadFavs);
+  const [favs, setFavs]           = useState(loadFavs);          // ordered id array
+  const [userStations, setUserStations] = useState(loadUserStations);
   const [liveMeta, setLiveMeta]   = useState(null);   // { title, artist } | null
   const [menuOpen, setMenuOpen]   = useState(false);
   const [customStation, setCustomStation] = useState(null);
@@ -82,12 +88,22 @@ export function App() {
     return () => window.removeEventListener('resize', fit);
   }, []);
 
-  const station = customStation || stationAt(freq);
+  // All known stations = presets + user-created
+  const allStations = [...STATIONS, ...userStations];
+  const stationById = (id) => allStations.find(s => s.id === id) || null;
+
+  const station = customStation || stationAt(allStations, freq);
   const setFreq = (f) => { setCustomStation(null); setFreqRaw(f); };
+
+  // Favorites shown in the grid: pinned first, then starred (in order)
+  const pinnedStations = PINNED_IDS.map(stationById).filter(Boolean);
+  const favStations = favs.map(stationById).filter(Boolean).filter(s => !PINNED_IDS.includes(s.id));
+  const favoriteList = [...pinnedStations, ...favStations];
 
   // ── persist ────────────────────────────────────────────────────────────────
   useEffect(() => { localStorage.setItem('mun-freq', freq); }, [freq]);
-  useEffect(() => { localStorage.setItem('mun-favs', JSON.stringify([...favs])); }, [favs]);
+  useEffect(() => { localStorage.setItem('mun-favs2', JSON.stringify(favs)); }, [favs]);
+  useEffect(() => { localStorage.setItem('mun-stations', JSON.stringify(userStations)); }, [userStations]);
 
   // ── Web Audio setup (called on first user-gesture play) ───────────────────
   const setupAudio = useCallback(() => {
@@ -127,7 +143,7 @@ export function App() {
   // ── Audio element control ─────────────────────────────────────────────────
   useEffect(() => {
     const a = audioRef.current; if (!a) return;
-    const url = station?.stream;
+    const url = station?.stream ? resolveStream(station.stream) : null;
     if (!url) { a.pause(); a.removeAttribute('src'); return; }
     if (a.dataset.url !== url) { a.dataset.url = url; a.src = url; }
     if (playing) { a.play().catch(() => {}); } else { a.pause(); }
@@ -203,21 +219,47 @@ export function App() {
   }, [station, playing]);
 
   // ── Station helpers ────────────────────────────────────────────────────────
+  // Play a station: tunable ones jump the dial, dial-less customs play directly
   const selectStation = (s) => {
-    setCustomStation(null); setFreqRaw(s.freq); setPlaying(true);
+    if (typeof s.freq === 'number') { setCustomStation(null); setFreqRaw(s.freq); }
+    else { setCustomStation(s); }
+    setPlaying(true);
     setupAudio();
   };
   const step = (dir) => {
     setCustomStation(null);
-    const base = station ? STATIONS.findIndex(x => x.id === station.id) : nearestIdx(freq);
-    const ni = (base + dir + STATIONS.length) % STATIONS.length;
-    setFreqRaw(STATIONS[ni].freq); setPlaying(true);
+    const dial = onDial(allStations).sort((a, b) => a.freq - b.freq);
+    if (!dial.length) return;
+    let base = dial.findIndex(x => station && x.id === station.id);
+    if (base < 0) { // nearest to current freq
+      let bd = Infinity;
+      dial.forEach((s, i) => { const d = Math.abs(s.freq - freq); if (d < bd) { bd = d; base = i; } });
+    }
+    const ni = (base + dir + dial.length) % dial.length;
+    setFreqRaw(dial[ni].freq); setPlaying(true);
     setupAudio();
   };
-  const toggleFav = (id) => setFavs(prev => {
-    const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n;
-  });
-  const isFav = station ? favs.has(station.id) : false;
+
+  // Star toggle. Pinned stations can't be removed. A transient preview station
+  // gets promoted to a saved user-station the first time it's starred.
+  const toggleFav = (id) => {
+    if (PINNED_IDS.includes(id)) return;
+    setFavs(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+  const favCurrent = () => {
+    if (!station) return;
+    if (PINNED_IDS.includes(station.id)) return;
+    // Already a known (preset or saved) station → just toggle
+    if (stationById(station.id)) { toggleFav(station.id); return; }
+    // Transient preview → save it, then star it
+    const saved = { ...station, id: `u${Date.now()}` };
+    setUserStations(prev => [...prev, saved]);
+    setFavs(prev => [...prev, saved.id]);
+    setCustomStation(saved);
+  };
+  const isFav = station
+    ? (PINNED_IDS.includes(station.id) || favs.includes(station.id))
+    : false;
 
   // Toggle play — must call setupAudio on the SAME user gesture (synchronous)
   const handleTogglePlay = () => {
@@ -254,18 +296,50 @@ export function App() {
     return () => clearInterval(id);
   }, [alarmOn, alarm]);
 
-  // ── Custom URL (+ optional image) ─────────────────────────────────────────
-  const onPlayUrl = (url, imageSrc = null) => {
-    setCustomStation({
-      id: 'custom', name: 'Custom Stream',
-      tagline: url,         // shown on bottom line when no metadata
-      stream: url, meta: null,
-      logo: imageSrc || null,
-      theme: { sky: ['#241a12', '#5a3a1e'], sun: '#f4b860', glow: '#e08a2e', water: '#c9762a' }
-    });
-    setPlaying(true);
-    setMenuOpen(false);
-    setupAudio();
+  // ── Custom stream: preview (try) vs create (save) ──────────────────────────
+  const makeStation = (id, { url, name, imageSrc, freq }) => ({
+    id,
+    name: (name && name.trim()) || 'Custom Stream',
+    tagline: url,                     // bottom line when no metadata
+    stream: url, meta: null,
+    logo: imageSrc || null,
+    ...(typeof freq === 'number' ? { freq } : {}),
+    theme: CUSTOM_THEME,
+  });
+
+  // Preview without saving — transient station id 'custom'
+  const onPreviewUrl = (url, imageSrc = null, name = '') => {
+    if (!url) return;
+    if (isBlockedHttp(url)) { alert('ลิงค์นี้เป็น http:// — ต้องตั้งค่า Cloudflare proxy ก่อนถึงจะเล่นบนเว็บ https ได้'); return; }
+    setCustomStation(makeStation('custom', { url, name, imageSrc }));
+    setPlaying(true); setMenuOpen(false); setupAudio();
+  };
+
+  // Create + save. FM given → dial; no FM → favorites
+  const onCreateStation = ({ url, imageSrc = null, name = '', freq = null }) => {
+    if (!url) return;
+    if (isBlockedHttp(url)) { alert('ลิงค์นี้เป็น http:// — ต้องตั้งค่า Cloudflare proxy ก่อนถึงจะเล่นบนเว็บ https ได้'); return; }
+    const id = `u${Date.now()}`;
+    const hasFreq = typeof freq === 'number' && !isNaN(freq);
+    const snapped = hasFreq ? snap(freq) : null;
+    const s = makeStation(id, { url, name, imageSrc, freq: hasFreq ? snapped : undefined });
+    setUserStations(prev => [...prev, s]);
+
+    if (hasFreq) {
+      setCustomStation(null); setFreqRaw(snapped);   // lands on the dial
+    } else {
+      setFavs(prev => [...prev, id]);                // lands in favorites
+      setCustomStation(s);
+    }
+    setPlaying(true); setMenuOpen(false); setupAudio();
+  };
+
+  // Remove a saved user-station entirely (from favorites + storage)
+  const removeStation = (id) => {
+    if (PINNED_IDS.includes(id)) return;
+    setFavs(prev => prev.filter(x => x !== id));
+    setUserStations(prev => prev.filter(s => s.id !== id));
+    if (station?.id === id) setCustomStation(null);
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -296,21 +370,25 @@ export function App() {
           <Display
             station={station} freq={freq} playing={playing} volume={volume}
             marqueeSpeed={14} liveMeta={liveMeta} isFav={isFav} analyser={analyser}
-            onToggleFav={() => station && toggleFav(station.id)}
+            onToggleFav={favCurrent}
           />
-          <TuningScale freq={freq} setFreq={setFreq} onHold={() => station && toggleFav(station.id)} />
+          <TuningScale freq={freq} setFreq={setFreq} onHold={favCurrent} />
           <Deck
             volume={volume} setVolume={setVolume} freq={freq} setFreq={setFreq}
             playing={playing} togglePlay={handleTogglePlay}
             prev={() => step(-1)} next={() => step(1)}
           />
-          <Favorites currentId={station?.id} onSelect={selectStation} favs={favs} toggleFav={toggleFav} />
+          <Favorites
+            currentId={station?.id} onSelect={selectStation}
+            stations={favoriteList} pinnedIds={PINNED_IDS} onRemove={removeStation}
+          />
         </div>
         <div className="home-ind" />
       </div>
 
       <MenuDrawer
-        open={menuOpen} onClose={() => setMenuOpen(false)} onPlayUrl={onPlayUrl}
+        open={menuOpen} onClose={() => setMenuOpen(false)}
+        onPreviewUrl={onPreviewUrl} onCreateStation={onCreateStation}
         sleepMin={sleepMin} onSetSleep={onSetSleep} sleepRemain={sleepRemain}
         alarm={alarm} onAlarmTime={setAlarm} alarmOn={alarmOn} onAlarmToggle={() => setAlarmOn(v => !v)}
       />

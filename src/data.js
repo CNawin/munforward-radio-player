@@ -5,6 +5,38 @@ export const BAND = { min: 87.5, max: 108.0, step: 0.25 };
 const SUPABASE = import.meta.env.VITE_SUPABASE_URL || 'https://bdsghzhldccguesbabpm.supabase.co';
 const META = (station) => `${SUPABASE}/functions/v1/meta-proxy?station=${station}`;
 
+// Stations that are pinned to the top of Favorites and can't be removed
+export const PINNED_IDS = ['mun103', 'xtra88'];
+
+// Cloudflare Worker stream proxy — set VITE_STREAM_PROXY after deploying the worker
+// e.g. https://radio-proxy.<you>.workers.dev   (used only for http:// streams on https)
+const STREAM_PROXY = import.meta.env.VITE_STREAM_PROXY || '';
+export const HAS_STREAM_PROXY = !!STREAM_PROXY;
+
+/**
+ * Resolve a stream URL for playback.
+ * Browsers block http:// media on an https:// page (mixed content), so http
+ * streams are routed through the Cloudflare Worker proxy when one is configured.
+ */
+export function resolveStream(url) {
+  if (!url) return url;
+  const u = url.trim();
+  const isHttp = /^http:\/\//i.test(u);
+  const pageHttps = typeof location !== 'undefined' && location.protocol === 'https:';
+  if (isHttp && pageHttps && STREAM_PROXY) {
+    return `${STREAM_PROXY.replace(/\/$/, '')}/?url=${encodeURIComponent(u)}`;
+  }
+  return u;
+}
+
+/** True when this URL would be blocked as mixed content and we have no proxy. */
+export function isBlockedHttp(url) {
+  if (!url) return false;
+  const isHttp = /^http:\/\//i.test(url.trim());
+  const pageHttps = typeof location !== 'undefined' && location.protocol === 'https:';
+  return isHttp && pageHttps && !STREAM_PROXY;
+}
+
 export const STATIONS = [
   {
     id: 'mun103',

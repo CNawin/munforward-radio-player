@@ -691,6 +691,27 @@ body{
 }
 .img-clear:hover{ opacity:1; }
 
+/* ============ Add-station form ============ */
+.menu-sec > .url-input{ width:100%; }
+.field-row{ display:flex; gap:8px; margin-top:8px; }
+.field-row .url-input{ flex:1 1 auto; }
+.fm-input{ flex:0 0 96px !important; text-align:center; }
+.field-hint{ font-size:10.5px; color:var(--ink); opacity:.72; margin-top:6px; line-height:1.35; }
+.url-actions{ display:flex; gap:8px; margin-top:12px; }
+.url-preview, .url-actions .url-go{
+  flex:1 1 0; height:42px; padding:0; border-radius:10px; cursor:pointer;
+  font-family:var(--font-label); font-size:13px; font-weight:700; letter-spacing:.5px;
+  color:var(--ink-strong);
+}
+
+/* ============ Favorites: empty + pinned ============ */
+.fav-empty{ font-size:12px; color:var(--cream-dim); padding:6px 2px 2px; line-height:1.45; }
+.fav-pin{
+  flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+  width:28px; height:28px; color:var(--amber-bright); opacity:.9;
+}
+.fav-pin svg{ width:15px; height:15px; }
+
 /* ============ Mobile: fill viewport, remove phone-in-phone frame ============ */
 @media screen and (max-width: 430px) {
   html, body {
