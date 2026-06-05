@@ -731,25 +731,40 @@ body{
   }
   body { align-items: flex-start; }
 
-  /* ── Outer phone frame: fill screen, no decorative chrome ── */
+  /* ── Outer phone frame: edge-to-edge at top + sides, dark margin at the
+        bottom so the radio's rounded corners sit away from the screen edge. ── */
   .phone {
     width: 100vw  !important;
     height: 100svh !important;
     border-radius: 0  !important;
     box-shadow: none  !important;
-    padding: 0        !important;
+    /* dark strip only at the bottom (home-indicator + corner margin) */
+    padding: 0 0 calc(env(safe-area-inset-bottom) + 7px) !important;
     transform: none   !important;
     margin: 0         !important;
   }
-  .screen-wrap { border-radius: 0 !important; }
+  /* top flush (edge-to-edge), bottom corners rounded → lifted off screen corners */
+  .screen-wrap {
+    border-radius: 0 0 24px 24px !important;
+  }
 
-  /* ── Radio body: column that fills height; only .fav scrolls.
-        Side padding 16px; top/bottom honour safe-area (PWA / notch). ── */
+  /* Top inner shadow: gives the device depth AND darkens the status-bar strip
+     so the white iOS time/battery text stays readable over the silver body. */
+  .screen-wrap::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: calc(env(safe-area-inset-top) + 16px);
+    background: linear-gradient(180deg,
+      rgba(0,0,0,.55) 0%, rgba(0,0,0,.34) 45%, rgba(0,0,0,0) 100%);
+    pointer-events: none; z-index: 30;
+  }
+
+  /* ── Radio body: column that fills height; only .fav scrolls. ── */
   .radio {
-    padding-top:    max(10px, env(safe-area-inset-top))    !important;
-    padding-bottom: max(6px,  env(safe-area-inset-bottom)) !important;
-    padding-left:   max(16px, env(safe-area-inset-left))   !important;
-    padding-right:  max(16px, env(safe-area-inset-right))  !important;
+    padding-top:    max(10px, env(safe-area-inset-top)) !important;
+    padding-bottom: 8px  !important;
+    padding-left:   16px !important;
+    padding-right:  16px !important;
     gap: 8px !important;
     overflow-y: hidden !important;
   }
