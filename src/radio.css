@@ -731,23 +731,18 @@ body{
   }
   body { align-items: flex-start; }
 
-  /* ── Outer phone frame: edge-to-edge at top + sides, dark margin at the
-        bottom so the radio's rounded corners sit away from the screen edge. ── */
+  /* ── Outer phone frame: silver radio face fills the whole screen,
+        edge-to-edge on every side. ── */
   .phone {
     width: 100vw  !important;
     height: 100svh !important;
     border-radius: 0  !important;
     box-shadow: none  !important;
-    /* dark strip at the bottom — lifts the radio body up off the screen edge
-       so the favorites slots sit just above a clear dark margin */
-    padding: 0 0 calc(env(safe-area-inset-bottom) + 28px) !important;
+    padding: 0        !important;
     transform: none   !important;
     margin: 0         !important;
   }
-  /* top flush (edge-to-edge), bottom corners rounded → lifted off screen corners */
-  .screen-wrap {
-    border-radius: 0 0 24px 24px !important;
-  }
+  .screen-wrap { border-radius: 0 !important; }
 
   /* Top inner shadow: gives the device depth AND darkens the status-bar strip
      so the white iOS time/battery text stays readable over the silver body. */
@@ -760,10 +755,11 @@ body{
     pointer-events: none; z-index: 30;
   }
 
-  /* ── Radio body: column that fills height; only .fav scrolls. ── */
+  /* ── Radio body: silver face fills the screen; favorites sits at content
+        height and the silver continues below it to the bottom. ── */
   .radio {
     padding-top:    max(10px, env(safe-area-inset-top)) !important;
-    padding-bottom: 8px  !important;
+    padding-bottom: max(8px, env(safe-area-inset-bottom)) !important;
     padding-left:   16px !important;
     padding-right:  16px !important;
     gap: 8px !important;
@@ -793,9 +789,11 @@ body{
   /* ── Tighten deck ── */
   .deck { padding: 10px 10px 9px !important; }
 
-  /* ── Favorites: the ONLY flexible/scrollable area ── */
+  /* ── Favorites: sized to its slots (no empty space inside); the silver
+        radio face shows below it. Shrinks + scrolls only if the screen is
+        too short to fit everything. ── */
   .fav {
-    flex: 1 1 0   !important;
+    flex: 0 1 auto !important;
     min-height: 0 !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
