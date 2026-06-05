@@ -738,8 +738,9 @@ body{
     height: 100svh !important;
     border-radius: 0  !important;
     box-shadow: none  !important;
-    /* dark strip only at the bottom (home-indicator + corner margin) */
-    padding: 0 0 calc(env(safe-area-inset-bottom) + 7px) !important;
+    /* dark strip at the bottom — lifts the radio body up off the screen edge
+       so the favorites slots sit just above a clear dark margin */
+    padding: 0 0 calc(env(safe-area-inset-bottom) + 28px) !important;
     transform: none   !important;
     margin: 0         !important;
   }
