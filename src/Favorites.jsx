@@ -7,7 +7,11 @@ import { RetroArt } from './parts/RetroArt';
  * onSelect  : play a station
  * onRemove  : remove a starred/custom station
  */
+const MIN_SLOTS = 8; // reserve a consistent area even with few stations
+
 export function Favorites({ currentId, onSelect, stations = [], pinnedIds = [], onRemove }) {
+  const emptyCount = Math.max(0, MIN_SLOTS - stations.length);
+
   return (
     <div className="fav">
       <div className="fav-head">
@@ -15,11 +19,8 @@ export function Favorites({ currentId, onSelect, stations = [], pinnedIds = [], 
         <h3>FAVORITE STATIONS</h3>
       </div>
 
-      {stations.length === 0 ? (
-        <div className="fav-empty thai">ยังไม่มีสถานี — กดดาว ★ ที่หน้าจอ หรือสร้างสถานีในเมนู</div>
-      ) : (
-        <div className="fav-grid">
-          {stations.map(s => {
+      <div className="fav-grid">
+        {stations.map(s => {
             const active = s.id === currentId;
             const pinned = pinnedIds.includes(s.id);
             return (
@@ -51,8 +52,14 @@ export function Favorites({ currentId, onSelect, stations = [], pinnedIds = [], 
               </div>
             );
           })}
+
+          {/* Faint placeholder slots — reserve space, ready to fill */}
+          {Array.from({ length: emptyCount }, (_, i) => (
+            <div key={`slot-${i}`} className="fav-slot" aria-hidden="true">
+              <span>+</span>
+            </div>
+          ))}
         </div>
-      )}
     </div>
   );
 }

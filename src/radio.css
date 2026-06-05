@@ -704,7 +704,14 @@ body{
   color:var(--ink-strong);
 }
 
-/* ============ Favorites: empty + pinned ============ */
+/* ============ Favorites: placeholder slots + pinned ============ */
+.fav-slot{
+  min-height:64px; border-radius:12px;
+  border:1.5px dashed rgba(233,220,191,.14);
+  background:rgba(255,255,255,.012);
+  display:flex; align-items:center; justify-content:center;
+}
+.fav-slot span{ font-size:20px; font-weight:300; color:rgba(233,220,191,.16); line-height:1; }
 .fav-empty{ font-size:12px; color:var(--cream-dim); padding:6px 2px 2px; line-height:1.45; }
 .fav-pin{
   flex:0 0 auto; display:flex; align-items:center; justify-content:center;
