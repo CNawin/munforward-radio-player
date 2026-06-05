@@ -12,6 +12,9 @@ const snap = (f) => {
   const v = Math.round((f - BAND.min) / BAND.step) * BAND.step + BAND.min;
   return Math.max(BAND.min, Math.min(BAND.max, Math.round(v * 100) / 100));
 };
+// Mobile = no Web Audio (reliable background playback + Media Session)
+const isMobile = () => typeof window !== 'undefined' && window.innerWidth <= 430;
+
 // Stations that actually sit on the dial (have a numeric freq)
 const onDial = (list) => list.filter(s => typeof s.freq === 'number');
 const stationAt = (list, f) => onDial(list).find(s => Math.abs(s.freq - f) < 0.001) || null;
@@ -65,6 +68,7 @@ export function App() {
   const srcConnected   = useRef(false);
   const lastSongKey    = useRef('');     // "title|artist" — prevents art flicker on re-poll
   const phoneRef       = useRef(null);
+  const stepRef        = useRef(null);   // stable ref to step() for media-session handlers
 
   // ── Scale phone to fit viewport — desktop only; mobile uses CSS ──────────
   useEffect(() => {
@@ -105,8 +109,13 @@ export function App() {
   useEffect(() => { localStorage.setItem('mun-favs2', JSON.stringify(favs)); }, [favs]);
   useEffect(() => { localStorage.setItem('mun-stations', JSON.stringify(userStations)); }, [userStations]);
 
-  // ── Web Audio setup (called on first user-gesture play) ───────────────────
+  // ── Web Audio setup (DESKTOP ONLY — drives the waveform) ──────────────────
+  // On mobile we deliberately skip Web Audio: routing the stream through an
+  // AudioContext makes iOS suspend playback in the background (CarPlay / screen
+  // off → stutter) and hides the track from Now Playing. Plain <audio> is
+  // smooth in the background and lets Media Session publish metadata.
   const setupAudio = useCallback(() => {
+    if (isMobile()) return;
     if (srcConnected.current) {
       // Already connected — just resume context if suspended
       audioCtxRef.current?.resume();
@@ -266,6 +275,40 @@ export function App() {
     if (!playing) setupAudio();
     setPlaying(p => !p);
   };
+
+  // ── Media Session — cover/title/artist + controls on lockscreen / CarPlay ──
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+    const ms = navigator.mediaSession;
+    if (!station) { ms.metadata = null; return; }
+
+    const title  = liveMeta?.title  || station.name || 'MUNforward Radio';
+    const artist = liveMeta?.artist || station.tagline || 'MUNforward';
+    const artSrc = liveMeta?.artUrl || station.logo || null;
+    const artwork = artSrc
+      ? [96, 192, 256, 384, 512].map(s => ({ src: artSrc, sizes: `${s}x${s}`, type: 'image/jpeg' }))
+      : [];
+
+    try {
+      ms.metadata = new window.MediaMetadata({ title, artist, album: station.name || 'MUNforward', artwork });
+      ms.playbackState = playing ? 'playing' : 'paused';
+    } catch { /* MediaMetadata unsupported */ }
+  }, [station, liveMeta, playing]);
+
+  // keep a stable ref to step() for the media-session handlers below
+  stepRef.current = step;
+  // Register lockscreen / steering-wheel control handlers once
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+    const ms = navigator.mediaSession;
+    const set = (a, h) => { try { ms.setActionHandler(a, h); } catch {} };
+    set('play',  () => { setupAudio(); setPlaying(true); });
+    set('pause', () => setPlaying(false));
+    set('stop',  () => setPlaying(false));
+    set('nexttrack',     () => stepRef.current(1));
+    set('previoustrack', () => stepRef.current(-1));
+    return () => ['play','pause','stop','nexttrack','previoustrack'].forEach(a => set(a, null));
+  }, []);
 
   // ── Sleep timer ────────────────────────────────────────────────────────────
   const onSetSleep = (m) => {
