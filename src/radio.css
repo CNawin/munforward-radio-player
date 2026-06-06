@@ -728,14 +728,18 @@ body{
   html, body {
     height: 100svh;
     overflow: hidden;
+    /* silver fallback so the home-indicator strip never shows black */
+    background: #a7adb5 !important;
   }
   body { align-items: flex-start; }
 
-  /* ── Outer phone frame: silver radio face fills the whole screen,
-        edge-to-edge on every side. ── */
+  /* ── Outer phone frame: silver radio face covers the ENTIRE screen,
+        truly edge-to-edge including the home-indicator area. ── */
   .phone {
-    width: 100vw  !important;
-    height: 100svh !important;
+    position: fixed !important;
+    inset: 0 !important;
+    width: auto  !important;
+    height: auto !important;
     border-radius: 0  !important;
     box-shadow: none  !important;
     padding: 0        !important;
