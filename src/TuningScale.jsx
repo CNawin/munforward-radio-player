@@ -26,14 +26,21 @@ export function TuningScale({ freq, setFreq, onHold }) {
 
   const ticks = [];
   const labels = [];
-  for (let f = Math.ceil(BAND.min * 4) / 4; f <= BAND.max + 0.001; f += 0.25) {
+  // Extend ticks ~5 MHz beyond each band edge so the dial is never empty when
+  // tuned near the edges (e.g. FM88). Filler ticks are dimmed and unlabelled.
+  const PAD = 5;
+  const start = Math.ceil((BAND.min - PAD) * 4) / 4;
+  for (let f = start; f <= BAND.max + PAD + 0.001; f += 0.25) {
     const x = (f - BAND.min) * pxPerMHz;
+    const inBand = f >= BAND.min - 0.001 && f <= BAND.max + 0.001;
     const isInt = Math.abs(f - Math.round(f)) < 0.001;
     const isHalf = Math.abs((f * 2) - Math.round(f * 2)) < 0.001;
     ticks.push(
-      <span key={'t' + f.toFixed(2)} className={`tick ${isInt ? 'major' : isHalf ? 'mid' : 'minor'}`} style={{ left: `${x}px` }} />
+      <span key={'t' + f.toFixed(2)}
+            className={`tick ${isInt ? 'major' : isHalf ? 'mid' : 'minor'}${inBand ? '' : ' pad'}`}
+            style={{ left: `${x}px` }} />
     );
-    if (isInt && Math.round(f) % 1 === 0) {
+    if (isInt && inBand) {
       labels.push(<span key={'l' + f} className="tick-label" style={{ left: `${x}px` }}>{String(Math.round(f))}</span>);
     }
   }

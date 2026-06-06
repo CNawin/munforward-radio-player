@@ -338,6 +338,7 @@ body{
 .tick.major{ height:18px; background:var(--cream); width:1.5px; }
 .tick.mid{ height:13px; }
 .tick.minor{ height:8px; opacity:.55; }
+.tick.pad{ opacity:.28; }   /* filler ticks beyond the FM band (no label) */
 .tick-label{
   position:absolute; top:36px; transform:translateX(-50%);
   font-size:12px; color:var(--cream); font-variant-numeric:tabular-nums; font-weight:500;
