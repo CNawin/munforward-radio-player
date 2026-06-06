@@ -392,7 +392,9 @@ export function App() {
       className="phone finish-silver glow-amber shape-boxy logo-sans head-sans"
       style={{ '--logo-size': '14px', '--head-size': '20px' }}
     >
-      <audio ref={audioRef} preload="none" crossOrigin="anonymous" />
+      {/* crossOrigin only on desktop (for Web Audio waveform). On mobile we
+          play <audio> directly, so omit it — lets CORS-less streams play too. */}
+      <audio ref={audioRef} preload="none" {...(isMobile() ? {} : { crossOrigin: 'anonymous' })} />
       <div className="screen-wrap">
         <div className="radio">
           {/* Header */}
