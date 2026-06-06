@@ -8,9 +8,9 @@ const META = (station) => `${SUPABASE}/functions/v1/meta-proxy?station=${station
 // Stations that are pinned to the top of Favorites and can't be removed
 export const PINNED_IDS = ['mun103', 'xtra88'];
 
-// Cloudflare Worker stream proxy — set VITE_STREAM_PROXY after deploying the worker
-// e.g. https://radio-proxy.<you>.workers.dev   (used only for http:// streams on https)
-const STREAM_PROXY = import.meta.env.VITE_STREAM_PROXY || '';
+// Cloudflare Worker stream proxy — relays http:// streams over https
+// (works for hostname-based streams; Cloudflare can't fetch raw IPs)
+const STREAM_PROXY = import.meta.env.VITE_STREAM_PROXY || 'https://radio-proxy.nawin-542.workers.dev';
 export const HAS_STREAM_PROXY = !!STREAM_PROXY;
 
 /**
