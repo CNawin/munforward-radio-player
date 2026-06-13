@@ -7,7 +7,7 @@ import { RetroArt } from './parts/RetroArt';
  * onSelect  : play a station
  * onRemove  : remove a starred/custom station
  */
-const MIN_SLOTS = 6; // 3 rows × 2 — box sized to fit exactly
+const MIN_SLOTS = 8; // 4 rows × 2 — box sized to fit; silver shows below
 
 export function Favorites({ currentId, onSelect, stations = [], pinnedIds = [], onRemove }) {
   const emptyCount = Math.max(0, MIN_SLOTS - stations.length);

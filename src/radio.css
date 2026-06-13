@@ -445,11 +445,10 @@ body{
     0 1px 2px rgba(0,0,0,.3);
   transform:translateY(2px);
 }
-/* engaged = latched down (Play while playing / Stop while stopped) */
+/* engaged = latched down (Play while playing / Stop while stopped).
+   Icon keeps its normal colour — only the button stays pressed in. */
 .tbtn.play.engaged{
-  color:var(--amber);
   background:
-    radial-gradient(120% 85% at 50% 80%, rgba(217,138,55,.18), transparent 60%),
     linear-gradient(180deg,var(--body-mid) 0%,var(--body-lo) 60%,var(--body-edge) 100%);
   box-shadow:
     inset 0 4px 9px rgba(0,0,0,.42),
@@ -819,23 +818,15 @@ body{
   /* ── Tighten deck ── */
   .deck { padding: 10px 10px 9px !important; }
 
-  /* ── Favorites: grow to fill the space below the deck; the 6 slots stretch
-        to fill so the black box reaches near the bottom (minimal silver). ── */
+  /* ── Favorites: sized to its 8 slots; the silver radio face shows below. ── */
   .fav {
-    flex: 1 1 auto !important;
+    flex: 0 1 auto !important;
     min-height: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
     padding: 12px 12px 12px !important;
   }
-  .fav .fav-grid {
-    flex: 1 1 auto !important;
-    grid-auto-rows: 67px !important;     /* small fixed frames */
-    row-gap: 13px !important;            /* a touch more breathing room between rows */
-    align-content: start !important;      /* cards grouped at top; black fills below */
-  }
+  .fav .fav-grid { grid-auto-rows: 67px !important; }
   .fav-head { margin-bottom: 10px !important; }
   .fav::-webkit-scrollbar { width: 0; }
 }
