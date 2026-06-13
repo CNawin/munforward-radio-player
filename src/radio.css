@@ -286,6 +286,25 @@ body{
 
 .disp-divider{ height:1px; background:rgba(233,220,191,.16); margin:6px 0 12px; }
 
+/* ============ Vintage 90s tuner indicators ============ */
+.disp-badges{
+  display:flex; align-items:center; gap:10px; margin-top:8px;
+  font-family:var(--font-label); font-size:9.5px; font-weight:700; letter-spacing:1.4px;
+  color:var(--cream-dim); opacity:.65; white-space:nowrap; overflow:hidden;
+}
+.disp-badges .vbadge{ display:flex; align-items:center; gap:5px; white-space:nowrap; }
+.disp-badges .vled{
+  width:7px; height:7px; border-radius:50%; background:#3a4a3a;
+  box-shadow:inset 0 0 2px rgba(0,0,0,.6);
+}
+.disp-badges.live{ opacity:.85; }
+.disp-badges.live .stereo{ color:var(--cream); }
+.disp-badges.live .vled{
+  background:radial-gradient(circle at 35% 30%, #b7ffcf, #36d678 60%, #109b4a);
+  box-shadow:0 0 7px #36d678, 0 0 2px #fff inset;
+}
+.disp-badges .cast{ margin-left:auto; color:var(--amber); opacity:.8; letter-spacing:1px; }
+
 /* big frequency */
 .freq{
   display:flex; align-items:baseline; gap:12px; padding-left:2px;
@@ -458,9 +477,9 @@ body{
 }
 .viewall:active{ background:#221d15; }
 
-.fav-grid{ display:grid; grid-template-columns:1fr 1fr; gap:13px; }
+.fav-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 .fav-card{
-  display:flex; align-items:center; gap:11px; padding:12px; min-width:0; min-height:84px;
+  display:flex; align-items:center; gap:10px; padding:10px; min-width:0; min-height:67px;
   border-radius:12px; cursor:pointer; position:relative;
   background:linear-gradient(180deg,var(--card),var(--card-lo));
   border:1px solid #322b21;
@@ -473,7 +492,7 @@ body{
   box-shadow:0 0 0 1px var(--amber), 0 0 16px rgba(217,138,55,.4), inset 0 1px 0 rgba(255,255,255,.06);
 }
 .fav-art{
-  flex:0 0 58px; width:58px; height:58px; border-radius:9px; overflow:hidden; position:relative;
+  flex:0 0 46px; width:46px; height:46px; border-radius:9px; overflow:hidden; position:relative;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
 }
 .fav-info{ flex:1 1 auto; min-width:0; }
@@ -518,7 +537,7 @@ body{
 
 /* ============ NOW PLAYING favorite star (floating, top-right over black) ============ */
 .np-star{
-  position:absolute; top:12px; right:140px; z-index:8;
+  position:absolute; top:12px; right:190px; z-index:8;
   width:auto; height:auto; padding:3px; margin:0;
   background:none; border:none; border-radius:0; box-shadow:none;
   display:flex; align-items:center; justify-content:center; cursor:pointer;
@@ -715,7 +734,7 @@ body{
 
 /* ============ Favorites: placeholder slots + pinned ============ */
 .fav-slot{
-  min-height:84px; border-radius:12px;
+  min-height:67px; border-radius:12px;
   border:1.5px dashed rgba(233,220,191,.14);
   background:rgba(255,255,255,.012);
   display:flex; align-items:center; justify-content:center;
@@ -794,6 +813,8 @@ body{
 
   /* Artwork enlarged */
   .art { flex: 0 0 138px !important; width: 138px !important; height: 138px !important; }
+  /* keep the favorite star clear of the (wider) art */
+  .np-star { right: 158px !important; }
 
   /* ── Tighten deck ── */
   .deck { padding: 10px 10px 9px !important; }
@@ -811,7 +832,9 @@ body{
   }
   .fav .fav-grid {
     flex: 1 1 auto !important;
-    grid-auto-rows: minmax(84px, 1fr) !important;  /* rows stretch to fill */
+    grid-auto-rows: 67px !important;     /* small fixed frames */
+    row-gap: 13px !important;            /* a touch more breathing room between rows */
+    align-content: start !important;      /* cards grouped at top; black fills below */
   }
   .fav-head { margin-bottom: 10px !important; }
   .fav::-webkit-scrollbar { width: 0; }

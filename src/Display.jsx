@@ -36,6 +36,14 @@ export function Display({ station, freq, playing, volume, marqueeSpeed = 14,
           }
 
           <Waveform playing={live} analyser={analyser} />
+
+          {/* vintage 90s tuner indicators */}
+          <div className={`disp-badges ${live ? 'live' : ''}`}>
+            <span className="vbadge stereo"><i className="vled" />STEREO</span>
+            <span className="vbadge">FM</span>
+            <span className="vbadge">Hi-Fi</span>
+            <span className="vbadge cast" aria-hidden>›››</span>
+          </div>
         </div>
 
         {station && (
