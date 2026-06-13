@@ -258,9 +258,9 @@ body{
   min-height:2.6em;             /* reserve 2 lines always (no-signal text wraps to 2) */
 }
 
-/* album art tile (enlarged ~20%) */
+/* album art tile (enlarged) */
 .art{
-  flex:0 0 142px; width:142px; height:142px; border-radius:13px;
+  flex:0 0 160px; width:160px; height:160px; border-radius:13px;
   overflow:hidden; position:relative;
   box-shadow:0 4px 14px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.08);
 }
@@ -458,9 +458,9 @@ body{
 }
 .viewall:active{ background:#221d15; }
 
-.fav-grid{ display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.fav-grid{ display:grid; grid-template-columns:1fr 1fr; gap:13px; }
 .fav-card{
-  display:flex; align-items:center; gap:10px; padding:9px; min-width:0;
+  display:flex; align-items:center; gap:11px; padding:12px; min-width:0; min-height:84px;
   border-radius:12px; cursor:pointer; position:relative;
   background:linear-gradient(180deg,var(--card),var(--card-lo));
   border:1px solid #322b21;
@@ -473,7 +473,7 @@ body{
   box-shadow:0 0 0 1px var(--amber), 0 0 16px rgba(217,138,55,.4), inset 0 1px 0 rgba(255,255,255,.06);
 }
 .fav-art{
-  flex:0 0 46px; width:46px; height:46px; border-radius:9px; overflow:hidden; position:relative;
+  flex:0 0 58px; width:58px; height:58px; border-radius:9px; overflow:hidden; position:relative;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);
 }
 .fav-info{ flex:1 1 auto; min-width:0; }
@@ -715,7 +715,7 @@ body{
 
 /* ============ Favorites: placeholder slots + pinned ============ */
 .fav-slot{
-  min-height:64px; border-radius:12px;
+  min-height:84px; border-radius:12px;
   border:1.5px dashed rgba(233,220,191,.14);
   background:rgba(255,255,255,.012);
   display:flex; align-items:center; justify-content:center;
@@ -792,22 +792,27 @@ body{
   /* iOS can't read live-stream audio → hide the wave instead of faking it */
   .waveform{ display: none !important; }
 
-  /* Artwork enlarged ~20% */
-  .art { flex: 0 0 116px !important; width: 116px !important; height: 116px !important; }
+  /* Artwork enlarged */
+  .art { flex: 0 0 138px !important; width: 138px !important; height: 138px !important; }
 
   /* ── Tighten deck ── */
   .deck { padding: 10px 10px 9px !important; }
 
-  /* ── Favorites: sized to its slots (no empty space inside); the silver
-        radio face shows below it. Shrinks + scrolls only if the screen is
-        too short to fit everything. ── */
+  /* ── Favorites: grow to fill the space below the deck; the 6 slots stretch
+        to fill so the black box reaches near the bottom (minimal silver). ── */
   .fav {
-    flex: 0 1 auto !important;
+    flex: 1 1 auto !important;
     min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
-    padding: 10px 11px 8px !important;
+    padding: 12px 12px 12px !important;
   }
-  .fav-head { margin-bottom: 8px !important; }
+  .fav .fav-grid {
+    flex: 1 1 auto !important;
+    grid-auto-rows: minmax(84px, 1fr) !important;  /* rows stretch to fill */
+  }
+  .fav-head { margin-bottom: 10px !important; }
   .fav::-webkit-scrollbar { width: 0; }
 }
