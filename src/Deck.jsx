@@ -1,25 +1,37 @@
-import { BAND } from './data';
 import { Icon } from './parts/Icon';
-import { Knob } from './parts/Knob';
 
-const snap = (f) => {
-  const v = Math.round((f - BAND.min) / BAND.step) * BAND.step + BAND.min;
-  return Math.max(BAND.min, Math.min(BAND.max, Math.round(v * 100) / 100));
-};
-
-export function Deck({ volume, setVolume, freq, setFreq, playing, togglePlay, prev, next }) {
-  const tuneVal = (freq - BAND.min) / (BAND.max - BAND.min);
+/**
+ * Controls: ⏮  [■ Stop] [▶ Play]  ⏭
+ * Play and Stop are separate latching buttons (not a toggle). Default = Stop.
+ * The engaged button stays pressed down (vintage tape-deck style).
+ */
+export function Deck({ playing, onPlay, onStop, prev, next }) {
   return (
-    <div className="deck">
-      <Knob value={volume} onChange={setVolume} label="VOLUME" />
+    <div className="deck deck-buttons">
+      <button className="tbtn side" onClick={prev} aria-label="previous station">
+        <Icon.prev />
+      </button>
+
       <div className="transport">
-        <button className="tbtn side" onClick={prev} aria-label="previous station"><Icon.prev /></button>
-        <button className="tbtn play" onClick={togglePlay} aria-label="play/pause">
-          {playing ? <Icon.pause /> : <Icon.play />}
+        <button
+          className={`tbtn play ${!playing ? 'engaged' : ''}`}
+          onClick={onStop}
+          aria-label="stop"
+        >
+          <Icon.stop />
         </button>
-        <button className="tbtn side" onClick={next} aria-label="next station"><Icon.next /></button>
+        <button
+          className={`tbtn play ${playing ? 'engaged' : ''}`}
+          onClick={onPlay}
+          aria-label="play"
+        >
+          <Icon.play />
+        </button>
       </div>
-      <Knob value={tuneVal} onChange={(v) => setFreq(snap(BAND.min + v * (BAND.max - BAND.min)))} label="TUNE" />
+
+      <button className="tbtn side" onClick={next} aria-label="next station">
+        <Icon.next />
+      </button>
     </div>
   );
 }

@@ -49,7 +49,7 @@ const CUSTOM_THEME = { sky: ['#241a12', '#5a3a1e'], sun: '#f4b860', glow: '#e08a
 export function App() {
   const [freq, setFreqRaw]        = useState(loadFreq);
   const [playing, setPlaying]     = useState(false);
-  const [volume, setVolume]       = useState(0.72);
+  const [volume, setVolume]       = useState(1.0);  // full; system controls actual level
   const [favs, setFavs]           = useState(loadFavs);          // ordered id array
   const [userStations, setUserStations] = useState(loadUserStations);
   const [liveMeta, setLiveMeta]   = useState(null);   // { title, artist } | null
@@ -270,11 +270,9 @@ export function App() {
     ? (PINNED_IDS.includes(station.id) || favs.includes(station.id))
     : false;
 
-  // Toggle play — must call setupAudio on the SAME user gesture (synchronous)
-  const handleTogglePlay = () => {
-    if (!playing) setupAudio();
-    setPlaying(p => !p);
-  };
+  // Separate Play / Stop (not a toggle). setupAudio must run on the gesture.
+  const handlePlay = () => { setupAudio(); setPlaying(true); };
+  const handleStop = () => setPlaying(false);
 
   // ── Media Session — cover/title/artist + controls on lockscreen / CarPlay ──
   useEffect(() => {
@@ -417,10 +415,9 @@ export function App() {
             marqueeSpeed={14} liveMeta={liveMeta} isFav={isFav} analyser={analyser}
             onToggleFav={favCurrent}
           />
-          <TuningScale freq={freq} setFreq={setFreq} onHold={favCurrent} />
+          <TuningScale freq={freq} />
           <Deck
-            volume={volume} setVolume={setVolume} freq={freq} setFreq={setFreq}
-            playing={playing} togglePlay={handleTogglePlay}
+            playing={playing} onPlay={handlePlay} onStop={handleStop}
             prev={() => step(-1)} next={() => step(1)}
           />
           <Favorites
