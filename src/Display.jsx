@@ -10,7 +10,7 @@ import { Marquee } from './parts/Marquee';
  * Bottom line (tagline):      liveMeta.artist OR  station.tagline (preset tagline / URL for custom)
  */
 export function Display({ station, freq, playing, volume, marqueeSpeed = 14,
-                          liveMeta, isFav, onToggleFav, analyser }) {
+                          liveMeta, isFav, onToggleFav, analyser, receiving }) {
   const live = playing && !!station;
 
   const topText    = liveMeta?.title  || station?.name    || 'No Signal';
@@ -37,8 +37,8 @@ export function Display({ station, freq, playing, volume, marqueeSpeed = 14,
 
           <Waveform playing={live} analyser={analyser} />
 
-          {/* vintage 90s tuner indicators */}
-          <div className={`disp-badges ${live ? 'live' : ''}`}>
+          {/* vintage 90s tuner indicators — bright only when the stream is actually received */}
+          <div className={`disp-badges ${receiving ? 'live' : ''}`}>
             <span className="vbadge stereo"><i className="vled" />STEREO</span>
             <span className="vbadge">FM</span>
             <span className="vbadge">Hi-Fi</span>

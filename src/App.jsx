@@ -61,6 +61,7 @@ export function App() {
   const [alarm, setAlarm]         = useState('');
   const [alarmOn, setAlarmOn]     = useState(false);
   const [analyser, setAnalyser]   = useState(null);   // Web Audio AnalyserNode
+  const [audioActive, setAudioActive] = useState(false); // stream actually playing
 
   const audioRef       = useRef(null);
   const audioCtxRef    = useRef(null);
@@ -157,6 +158,21 @@ export function App() {
     if (a.dataset.url !== url) { a.dataset.url = url; a.src = url; }
     if (playing) { a.play().catch(() => {}); } else { a.pause(); }
   }, [station, playing]);
+
+  // ── Real signal reception (audio actually flowing from the stream) ────────
+  useEffect(() => {
+    const a = audioRef.current; if (!a) return;
+    const on  = () => setAudioActive(true);
+    const off = () => setAudioActive(false);
+    const evOn  = ['playing'];
+    const evOff = ['waiting', 'stalled', 'pause', 'ended', 'error', 'emptied', 'suspend'];
+    evOn.forEach(e => a.addEventListener(e, on));
+    evOff.forEach(e => a.addEventListener(e, off));
+    return () => {
+      evOn.forEach(e => a.removeEventListener(e, on));
+      evOff.forEach(e => a.removeEventListener(e, off));
+    };
+  }, []);
 
   useEffect(() => {
     // audio.volume works on desktop; GainNode is used for iOS Safari
@@ -413,6 +429,7 @@ export function App() {
           <Display
             station={station} freq={freq} playing={playing} volume={volume}
             marqueeSpeed={14} liveMeta={liveMeta} isFav={isFav} analyser={analyser}
+            receiving={audioActive}
             onToggleFav={favCurrent}
           />
           <TuningScale freq={freq} />
