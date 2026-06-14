@@ -32,7 +32,7 @@ export function Display({ station, freq, playing, volume, marqueeSpeed = 14,
           }
           {station
             ? <Marquee className="tagline thai" text={bottomText} speed={marqueeSpeed} />
-            : <div className="tagline thai">หมุนปุ่ม TUNE หรือเลื่อนสเกลเพื่อค้นหาสถานี</div>
+            : <div className="tagline thai">กดปุ่ม ◀ ▶ ปรับคลื่น หรือเลือกสถานีโปรดด้านล่าง</div>
           }
 
           <Waveform playing={live} analyser={analyser} />

@@ -70,6 +70,7 @@ export function App() {
   const lastSongKey    = useRef('');     // "title|artist" — prevents art flicker on re-poll
   const phoneRef       = useRef(null);
   const stepRef        = useRef(null);   // stable ref to step() for media-session handlers
+  const hiddenAt       = useRef(0);      // when the tab was last backgrounded
 
   // ── Scale phone to fit viewport — desktop only; mobile uses CSS ──────────
   useEffect(() => {
@@ -176,6 +177,28 @@ export function App() {
       evOff.forEach(e => a.removeEventListener(e, off));
     };
   }, []);
+
+  // ── Reconnect to the live edge when returning to the foreground ───────────
+  // A live stream's buffer goes stale while backgrounded (iOS throttles it),
+  // causing stutter on resume. If we were away a while (or iOS paused us),
+  // reload the stream so it reconnects fresh instead of playing stale buffer.
+  useEffect(() => {
+    const onVis = () => {
+      const a = audioRef.current; if (!a) return;
+      if (document.visibilityState === 'hidden') {
+        hiddenAt.current = Date.now();
+        return;
+      }
+      if (!playing || !a.src) return;
+      const away = Date.now() - hiddenAt.current;
+      if (a.paused || away > 6000) {
+        a.load();                       // drop stale buffer → reconnect live
+        a.play().catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, [playing]);
 
   useEffect(() => {
     // audio.volume works on desktop; GainNode is used for iOS Safari
@@ -438,7 +461,8 @@ export function App() {
           <TuningScale freq={freq} />
           <Deck
             playing={playing} onPlay={handlePlay} onStop={handleStop}
-            prev={() => step(-1)} next={() => step(1)}
+            prev={() => { setCustomStation(null); setFreqRaw(f => snap(f - BAND.step)); }}
+            next={() => { setCustomStation(null); setFreqRaw(f => snap(f + BAND.step)); }}
           />
           <Favorites
             currentId={station?.id} onSelect={selectStation}
