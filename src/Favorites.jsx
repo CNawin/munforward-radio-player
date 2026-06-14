@@ -9,7 +9,7 @@ import { RetroArt } from './parts/RetroArt';
  */
 const MIN_SLOTS = 8; // 4 rows × 2 — box sized to fit; silver shows below
 
-export function Favorites({ currentId, onSelect, stations = [], pinnedIds = [], onRemove }) {
+export function Favorites({ currentId, onSelect, stations = [], editableIds = [], onEdit, onDelete }) {
   const emptyCount = Math.max(0, MIN_SLOTS - stations.length);
 
   return (
@@ -22,7 +22,7 @@ export function Favorites({ currentId, onSelect, stations = [], pinnedIds = [], 
       <div className="fav-grid">
         {stations.map(s => {
             const active = s.id === currentId;
-            const pinned = pinnedIds.includes(s.id);
+            const editable = editableIds.includes(s.id);   // user-created station
             return (
               <div key={s.id} className={`fav-card ${active ? 'active' : ''}`} onClick={() => onSelect(s)}>
                 {active && <span className="fav-led" />}
@@ -38,16 +38,18 @@ export function Favorites({ currentId, onSelect, stations = [], pinnedIds = [], 
                     {typeof s.freq === 'number' ? `${s.freq.toFixed(2)} FM` : 'STREAM'}
                   </div>
                 </div>
-                {pinned ? (
-                  <span className="fav-pin" title="ปักหมุด"><Icon.star /></span>
-                ) : (
-                  <button
-                    className="fav-star on"
-                    title="เอาออกจากรายการโปรด"
-                    onClick={(e) => { e.stopPropagation(); onRemove?.(s.id); }}
-                  >
-                    <Icon.star />
-                  </button>
+                {active && editable && (
+                  <div className="fav-actions" onClick={(e) => e.stopPropagation()}>
+                    <button className="fav-act edit" aria-label="แก้ไขสถานี" onClick={() => onEdit?.(s)}>
+                      <Icon.edit />
+                    </button>
+                    <button
+                      className="fav-act del" aria-label="ลบสถานี"
+                      onClick={() => { if (window.confirm(`ต้องการลบ "${s.name}" ใช่ไหม?`)) onDelete?.(s.id); }}
+                    >
+                      <Icon.trash />
+                    </button>
+                  </div>
                 )}
               </div>
             );

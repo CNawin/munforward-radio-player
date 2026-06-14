@@ -4,6 +4,8 @@ export const Icon = {
   play: (p) => <svg width={26} height={26} viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M8 5v14l11-7L8 5z"/></svg>,
   pause: (p) => <svg width={24} height={24} viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M7 5h4v14H7V5zm6 0h4v14h-4V5z"/></svg>,
   stop: (p) => <svg width={24} height={24} viewBox="0 0 24 24" fill="currentColor" {...p}><rect x="6" y="6" width="12" height="12" rx="1.5"/></svg>,
+  edit: (p) => <svg width={18} height={18} viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>,
+  trash: (p) => <svg width={18} height={18} viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>,
   chevL: (p) => <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M15 6l-6 6 6 6"/></svg>,
   chevR: (p) => <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M9 6l6 6-6 6"/></svg>,
   star: (p) => <svg width={18} height={18} viewBox="0 0 24 24" fill="currentColor" {...p}><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2z"/></svg>,

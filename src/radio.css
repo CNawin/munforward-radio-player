@@ -538,10 +538,20 @@ body{
 }
 .fav-info{ flex:1 1 auto; min-width:0; }
 .fav-info .nm{
-  font-family:var(--font-label); font-weight:600; font-size:10px; color:var(--cream);
+  font-family:var(--font-label); font-weight:600; font-size:11.5px; color:var(--cream);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2;
 }
-.fav-info .fq{ font-family:var(--font-label); font-size:8px; color:var(--cream-dim); margin-top:2px; letter-spacing:.3px; }
+.fav-info .fq{ font-family:var(--font-label); font-size:8.5px; color:var(--cream-dim); margin-top:2px; letter-spacing:.3px; }
+/* edit / delete — appear on the active custom card only */
+.fav-actions{ flex:0 0 auto; display:flex; align-items:center; gap:5px; margin-left:6px; }
+.fav-act{
+  width:30px; height:30px; border-radius:8px; cursor:pointer; flex:0 0 auto;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
+  color:var(--cream); transition:transform .08s ease, background .15s;
+}
+.fav-act.del{ color:#e8694a; }
+.fav-act:active{ transform:scale(.88); }
 .fav-star{
   flex:0 0 auto; background:none; border:none; cursor:pointer; color:#5a5246; padding:2px;
   display:flex; align-items:center;

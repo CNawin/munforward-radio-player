@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export function MenuDrawer({ open, onClose, onPreviewUrl, onCreateStation,
+                             editStation = null, onUpdateStation,
                              sleepMin, onSetSleep, sleepRemain,
                              alarm, onAlarmTime, alarmOn, onAlarmToggle, version = 'v1.0.0 · 2026' }) {
   const [url, setUrl]             = useState('');
@@ -9,6 +10,20 @@ export function MenuDrawer({ open, onClose, onPreviewUrl, onCreateStation,
   const [imgSrc, setImgSrc]       = useState('');   // data URL or http URL
   const [imgUrlInput, setImgUrlInput] = useState('');
   const fileRef = useRef(null);
+  const editing = !!editStation;
+
+  // Prefill the form when opening in edit mode; clear it otherwise
+  useEffect(() => {
+    if (editStation) {
+      setUrl(editStation.stream || '');
+      setName(editStation.name && editStation.name !== 'Custom Stream' ? editStation.name : '');
+      setFm(typeof editStation.freq === 'number' ? String(editStation.freq) : '');
+      setImgSrc(editStation.logo || '');
+      setImgUrlInput('');
+    } else {
+      setUrl(''); setName(''); setFm(''); setImgSrc(''); setImgUrlInput('');
+    }
+  }, [editStation]);
 
   const handleFile = (e) => {
     const file = e.target.files?.[0];
@@ -30,13 +45,20 @@ export function MenuDrawer({ open, onClose, onPreviewUrl, onCreateStation,
     if (u) onPreviewUrl(u, imgSrc || null, name.trim());
   };
 
+  const parsedFreq = () => {
+    const f = parseFloat(fm);
+    return (!isNaN(f) && f >= 87.5 && f <= 108) ? f : null;
+  };
   const create = () => {
     const u = url.trim();
     if (!u) return;
-    const f = parseFloat(fm);
-    const freq = (!isNaN(f) && f >= 87.5 && f <= 108) ? f : null;
-    onCreateStation({ url: u, imageSrc: imgSrc || null, name: name.trim(), freq });
+    onCreateStation({ url: u, imageSrc: imgSrc || null, name: name.trim(), freq: parsedFreq() });
     reset();
+  };
+  const update = () => {
+    const u = url.trim();
+    if (!u) return;
+    onUpdateStation({ url: u, imageSrc: imgSrc || null, name: name.trim(), freq: parsedFreq() });
   };
 
   const handleClose = () => { onClose(); };
@@ -54,9 +76,9 @@ export function MenuDrawer({ open, onClose, onPreviewUrl, onCreateStation,
           <button className="menu-close raised" onClick={handleClose} aria-label="close menu">✕</button>
         </div>
 
-        {/* ── Add custom station ── */}
+        {/* ── Add / edit custom station ── */}
         <section className="menu-sec">
-          <div className="menu-sec-h">เพิ่มสถานีเอง</div>
+          <div className="menu-sec-h">{editing ? 'แก้ไขสถานี' : 'เพิ่มสถานีเอง'}</div>
 
           {/* Stream URL */}
           <input
@@ -116,7 +138,10 @@ export function MenuDrawer({ open, onClose, onPreviewUrl, onCreateStation,
           {/* Actions */}
           <div className="url-actions">
             <button className="url-preview raised" onClick={preview}>▶ ลองเล่น</button>
-            <button className="url-go raised" onClick={create}>+ สร้างสถานี</button>
+            {editing
+              ? <button className="url-go raised" onClick={update}>💾 บันทึกการแก้ไข</button>
+              : <button className="url-go raised" onClick={create}>+ สร้างสถานี</button>
+            }
           </div>
         </section>
 

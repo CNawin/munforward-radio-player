@@ -54,6 +54,7 @@ export function App() {
   const [userStations, setUserStations] = useState(loadUserStations);
   const [liveMeta, setLiveMeta]   = useState(null);   // { title, artist } | null
   const [menuOpen, setMenuOpen]   = useState(false);
+  const [editStation, setEditStation] = useState(null);  // station being edited
   const [customStation, setCustomStation] = useState(null);
   const [sleepMin, setSleepMin]   = useState(0);
   const [sleepAt, setSleepAt]     = useState(null);
@@ -425,6 +426,22 @@ export function App() {
     if (station?.id === id) setCustomStation(null);
   };
 
+  // ── Edit a saved user-station ──────────────────────────────────────────────
+  const onEditStation = (s) => { setEditStation(s); setMenuOpen(true); };
+  const onUpdateStation = ({ url, imageSrc = null, name = '', freq = null }) => {
+    if (!editStation || !url) return;
+    if (isBlockedHttp(url)) { alert('ลิงค์นี้เป็น http:// — ต้องตั้งค่า Cloudflare proxy ก่อน'); return; }
+    const hasFreq = typeof freq === 'number' && !isNaN(freq);
+    const snapped = hasFreq ? snap(freq) : null;
+    const updated = makeStation(editStation.id, { url, name, imageSrc, freq: hasFreq ? snapped : undefined });
+    setUserStations(prev => prev.map(s => s.id === editStation.id ? updated : s));
+    // reflect immediately if this station is the one playing
+    if (customStation?.id === editStation.id) setCustomStation(updated);
+    if (hasFreq) setFreqRaw(snapped);
+    setEditStation(null); setMenuOpen(false);
+  };
+  const closeMenu = () => { setMenuOpen(false); setEditStation(null); };
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div
@@ -466,15 +483,17 @@ export function App() {
           />
           <Favorites
             currentId={station?.id} onSelect={selectStation}
-            stations={favoriteList} pinnedIds={PINNED_IDS} onRemove={removeStation}
+            stations={favoriteList} editableIds={userStations.map(s => s.id)}
+            onEdit={onEditStation} onDelete={removeStation}
           />
         </div>
         <div className="home-ind" />
       </div>
 
       <MenuDrawer
-        open={menuOpen} onClose={() => setMenuOpen(false)}
+        open={menuOpen} onClose={closeMenu}
         onPreviewUrl={onPreviewUrl} onCreateStation={onCreateStation}
+        editStation={editStation} onUpdateStation={onUpdateStation}
         sleepMin={sleepMin} onSetSleep={onSetSleep} sleepRemain={sleepRemain}
         alarm={alarm} onAlarmTime={setAlarm} alarmOn={alarmOn} onAlarmToggle={() => setAlarmOn(v => !v)}
       />
