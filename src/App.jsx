@@ -325,10 +325,15 @@ export function App() {
 
     const title  = liveMeta?.title  || station.name || 'MUNforward Radio';
     const artist = liveMeta?.artist || station.tagline || 'MUNforward';
-    const artSrc = liveMeta?.artUrl || station.logo || null;
-    const artwork = artSrc
-      ? [96, 192, 256, 384, 512].map(s => ({ src: artSrc, sizes: `${s}x${s}`, type: 'image/jpeg' }))
-      : [];
+
+    // Media Session artwork must be an ABSOLUTE https URL. Relative paths
+    // (/logos/…) and data: URLs (uploaded covers) make iOS open a junk
+    // "data:" page when tapping Now Playing — so normalise / fall back.
+    const origin = typeof location !== 'undefined' ? location.origin : '';
+    const raw = liveMeta?.artUrl || station.logo || '';
+    let artSrc = raw.startsWith('/') ? origin + raw : raw;
+    if (!/^https:\/\//i.test(artSrc)) artSrc = `${origin}/icon-512.png`;  // skip data:/http
+    const artwork = [192, 256, 384, 512].map(s => ({ src: artSrc, sizes: `${s}x${s}`, type: 'image/png' }));
 
     try {
       ms.metadata = new window.MediaMetadata({ title, artist, album: station.name || 'MUNforward', artwork });
