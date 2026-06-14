@@ -14,7 +14,7 @@ export function Deck({ playing, onPlay, onStop, prev, next }) {
 
       <div className="transport">
         <button
-          className={`tbtn play ${!playing ? 'engaged' : ''}`}
+          className="tbtn play"
           onClick={onStop}
           aria-label="stop"
         >
