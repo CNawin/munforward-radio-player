@@ -344,6 +344,34 @@ body{
   background:linear-gradient(180deg,#100e0a,#1a160f);
   box-shadow:inset 0 2px 6px rgba(0,0,0,.85), inset 0 0 0 1px rgba(255,255,255,.05);
 }
+/* ── Glass-covered dial: warm amber bulbs glow inside + glossy glass on top ── */
+.display-dial{
+  background:
+    radial-gradient(28px 18px at 12% 116%, rgba(244,164,49,.38), transparent 72%),
+    radial-gradient(34px 20px at 38% 120%, rgba(244,164,49,.26), transparent 72%),
+    radial-gradient(34px 20px at 64% 120%, rgba(244,164,49,.26), transparent 72%),
+    radial-gradient(28px 18px at 88% 116%, rgba(244,164,49,.38), transparent 72%),
+    linear-gradient(180deg,#16110a 0%,#211910 62%,#181009 100%);
+  box-shadow:
+    inset 0 2px 7px rgba(0,0,0,.8),
+    inset 0 0 0 1px rgba(255,255,255,.05),
+    inset 0 1px 0 rgba(255,220,150,.10);
+}
+/* glass reflection — sits above the ticks/needle (you look through the glass) */
+.display-dial::after{
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:6; border-radius:inherit;
+  background:linear-gradient(118deg,
+    rgba(255,255,255,.14) 0%, rgba(255,255,255,.05) 16%,
+    transparent 34%, transparent 63%,
+    rgba(255,255,255,.05) 82%, rgba(255,255,255,.11) 100%);
+}
+/* glass edge + depth (small gap between dial face and glass) */
+.display-dial::before{
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:7; border-radius:inherit;
+  box-shadow:
+    inset 0 0 0 1.5px rgba(255,255,255,.07),
+    inset 0 3px 7px rgba(0,0,0,.32);
+}
 /* fixed scale layer (ticks + numbers don't move) */
 .scale-fixed{ position:absolute; inset:0; }
 .tick{ position:absolute; top:12px; width:1px; background:var(--cream-dim); transform:translateX(-50%); }
