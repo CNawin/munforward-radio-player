@@ -295,9 +295,9 @@ body{
   color:#9a9da1; opacity:.8; white-space:nowrap; overflow:hidden;   /* idle: light grey */
   transition:color .25s ease, opacity .25s ease;
 }
-.disp-badges .vbadge{ display:flex; align-items:flex-end; gap:5px; white-space:nowrap; }
+.disp-badges .vbadge{ display:flex; align-items:center; gap:5px; white-space:nowrap; }
 .disp-badges .vled{
-  width:7px; height:7px; border-radius:50%; margin-bottom:1px; background:#6c6f73;
+  width:7px; height:7px; border-radius:50%; background:#6c6f73; flex:0 0 7px;
   box-shadow:inset 0 0 2px rgba(0,0,0,.5); transition:background .25s, box-shadow .25s;
 }
 /* receiving → bright */
@@ -307,7 +307,7 @@ body{
   box-shadow:0 0 7px #36d678, 0 0 2px #fff inset;
 }
 /* level meter — bars rising to a red peak; base sits on the Hi-Fi baseline */
-.disp-badges .meter{ margin-left:auto; display:flex; align-items:flex-end; gap:2.5px; height:11px; }
+.disp-badges .meter{ margin-left:auto; display:flex; align-items:flex-end; gap:2.5px; height:11px; margin-bottom:2px; }
 .disp-badges .meter i{ width:2.5px; border-radius:1px; background:#9a9da1; transition:background .25s; }
 .disp-badges .meter i:nth-child(1){ height:32%; }
 .disp-badges .meter i:nth-child(2){ height:48%; }

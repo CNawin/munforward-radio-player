@@ -160,12 +160,15 @@ export function App() {
   }, [station, playing]);
 
   // ── Real signal reception (audio actually flowing from the stream) ────────
+  // Only definitive stops switch it off — NOT transient buffering events like
+  // `suspend`/`stalled`/`waiting` (those fire during healthy live playback and
+  // would make the indicator flicker).
   useEffect(() => {
     const a = audioRef.current; if (!a) return;
     const on  = () => setAudioActive(true);
     const off = () => setAudioActive(false);
-    const evOn  = ['playing'];
-    const evOff = ['waiting', 'stalled', 'pause', 'ended', 'error', 'emptied', 'suspend'];
+    const evOn  = ['playing', 'canplay'];
+    const evOff = ['pause', 'ended', 'error', 'emptied'];
     evOn.forEach(e => a.addEventListener(e, on));
     evOff.forEach(e => a.addEventListener(e, off));
     return () => {
